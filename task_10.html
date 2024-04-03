@@ -1,0 +1,115 @@
+// Audio class
+class Audio {
+    private static idCounter: number = 1;
+    readonly id: number;
+    readonly name: string;
+    readonly url: string;
+    private rating: number;
+
+    constructor(name: string, url: string) {
+        // Unique ID generation
+        this.id = Audio.idCounter++;
+        this.name = name;
+        this.url = url;
+        this.rating = 0; // Initially no ratings
+    }
+
+    // Getter for audio rating
+    getRating(): number {
+        return this.rating;
+    }
+}
+
+// Playlist class
+class Playlist {
+    private static idCounter: number = 1;
+    readonly id: number;
+    readonly name: string;
+    private audios: Audio[];
+    private ratings: number[];
+
+    constructor(name: string) {
+        // Unique ID generation
+        this.id = Playlist.idCounter++;
+        this.name = name;
+        this.audios = [];
+        this.ratings = [];
+    }
+
+    // Method to add audio to the playlist
+    addAudio(audio: Audio): void {
+        this.audios.push(audio);
+    }
+
+    // Method to calculate average rating of the playlist
+    getAverageRating(): number {
+        if (this.ratings.length === 0) return 0; // No ratings yet
+        const sum = this.ratings.reduce((acc, curr) => acc + curr, 0);
+        return sum / this.ratings.length;
+    }
+}
+
+// MusicPlayer class
+class MusicPlayer {
+    private playlists: Playlist[];
+
+    constructor() {
+        this.playlists = [];
+    }
+
+    // Method to create a new playlist
+    createPlaylist(name: string): void {
+        const playlist = new Playlist(name);
+        this.playlists.push(playlist);
+    }
+
+    // Method to search audios by name across all playlists
+    searchAudioByName(name: string): Audio[] {
+        let result: Audio[] = [];
+        for (const playlist of this.playlists) {
+            const found = playlist.audios.filter(audio => audio.name.toLowerCase().includes(name.toLowerCase()));
+            result = result.concat(found);
+        }
+        return result;
+    }
+
+    // Method to search playlists by name
+    searchPlaylistByName(name: string): Playlist[] {
+        return this.playlists.filter(playlist => playlist.name.toLowerCase().includes(name.toLowerCase()));
+    }
+
+    // Method to rate a playlist
+    ratePlaylist(playlistId: number, rating: number): void {
+        const playlist = this.playlists.find(playlist => playlist.id === playlistId);
+        if (playlist) {
+            playlist.ratings.push(rating);
+        }
+    }
+
+    // Method to rate an audio within a playlist
+    rateAudio(audioId: number, rating: number): void {
+        for (const playlist of this.playlists) {
+            const audio = playlist.audios.find(audio => audio.id === audioId);
+            if (audio) {
+                audio.rating = rating;
+                return;
+            }
+        }
+    }
+}
+
+// Example usage:
+const musicPlayer = new MusicPlayer();
+musicPlayer.createPlaylist("Rock");
+musicPlayer.createPlaylist("Jazz");
+
+const audio1 = new Audio("Song1", "http://example.com/song1.mp3");
+const audio2 = new Audio("Song2", "http://example.com/song2.mp3");
+
+musicPlayer.playlists[0].addAudio(audio1);
+musicPlayer.playlists[1].addAudio(audio2);
+
+console.log(musicPlayer.searchAudioByName("Song")); // [Audio, Audio]
+console.log(musicPlayer.searchPlaylistByName("Rock")); // [Playlist]
+musicPlayer.ratePlaylist(1, 5);
+musicPlayer.rateAudio(1, 4);
